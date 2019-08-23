@@ -2,13 +2,15 @@ package com.example.dangg.led_control;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.ILedService;
+import android.os.RemoteException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
-import com.example.dangg.Hardlibary.*;
+import android.os.ServiceManager;
 
 public class MainActivity extends Activity {
 
@@ -18,7 +20,7 @@ public class MainActivity extends Activity {
     private CheckBox checkBox2 = null;
     private CheckBox checkBox3 = null;
     private CheckBox checkBox4 = null;
-
+    private ILedService iLedService = null;
     public void button1_click(View view) {
         if(ledon)
         {
@@ -27,9 +29,14 @@ public class MainActivity extends Activity {
             checkBox2.setChecked(false);
             checkBox3.setChecked(false);
             checkBox4.setChecked(false);
-            for (int i = 0;i<4;i++)
-            {
-                HardControl.ledCtrl(i,0);
+
+            try {
+                for (int i = 0;i<4;i++)
+                {
+                    iLedService.ledCtrl(i,0);
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
         else
@@ -39,9 +46,13 @@ public class MainActivity extends Activity {
             checkBox2.setChecked(true);
             checkBox3.setChecked(true);
             checkBox4.setChecked(true);
-            for (int i = 0;i<4;i++)
-            {
-                HardControl.ledCtrl(i,1);
+            try {
+                for (int i = 0;i<4;i++)
+                {
+                    iLedService.ledCtrl(i,1);
+                }
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
         ledon = !ledon;
@@ -63,24 +74,28 @@ public class MainActivity extends Activity {
             ledFlag = 0;
         }
 
-        switch (view.getId())
-        {
-            case R.id.LED1:
-                Toast.makeText(getApplicationContext(), "LED1"+outmsg, Toast.LENGTH_SHORT).show();
-                HardControl.ledCtrl(0, ledFlag);
-                break;
-            case R.id.LED2:
-                Toast.makeText(getApplicationContext(), "LED2"+outmsg, Toast.LENGTH_SHORT).show();
-                HardControl.ledCtrl(1, ledFlag);
-                break;
-            case R.id.LED3:
-                Toast.makeText(getApplicationContext(), "LED3"+outmsg, Toast.LENGTH_SHORT).show();
-                HardControl.ledCtrl(2, ledFlag);
-                break;
-            case R.id.LED4:
-                Toast.makeText(getApplicationContext(), "LED4"+outmsg, Toast.LENGTH_SHORT).show();
-                HardControl.ledCtrl(3, ledFlag);
-                break;
+        try {
+            switch (view.getId())
+            {
+                case R.id.LED1:
+                    Toast.makeText(getApplicationContext(), "LED1"+outmsg, Toast.LENGTH_SHORT).show();
+                    iLedService.ledCtrl(0, ledFlag);
+                    break;
+                case R.id.LED2:
+                    Toast.makeText(getApplicationContext(), "LED2"+outmsg, Toast.LENGTH_SHORT).show();
+                    iLedService.ledCtrl(1, ledFlag);
+                    break;
+                case R.id.LED3:
+                    Toast.makeText(getApplicationContext(), "LED3"+outmsg, Toast.LENGTH_SHORT).show();
+                    iLedService.ledCtrl(2, ledFlag);
+                    break;
+                case R.id.LED4:
+                    Toast.makeText(getApplicationContext(), "LED4"+outmsg, Toast.LENGTH_SHORT).show();
+                    iLedService.ledCtrl(3, ledFlag);
+                    break;
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
         }
     }
 
@@ -89,7 +104,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        HardControl.ledOpen();
+        iLedService = ILedService.Stub.asInterface(ServiceManager.getService("led"));
         button = (Button)findViewById(R.id.button);
 
         checkBox1 = (CheckBox)findViewById(R.id.LED1);
